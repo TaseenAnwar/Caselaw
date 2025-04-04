@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Your backend server URL - change this when deployed
         // For local development
-        backendUrl: 'http://localhost:3000',
+        backendUrl: 'https://caselaw-backend-bicu.onrender.com',
         
         // For production deployment (update this when you deploy)
         // backendUrl: 'https://your-deployed-backend-url.com',
