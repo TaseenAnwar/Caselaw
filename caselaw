@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taseen's Caselaw Search</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 4px solid var(--secondary-color);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .search-form {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .search-form:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-container {
+            text-align: center;
+        }
+
+        #results {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            display: none;
+            margin: 2rem 0;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .cases-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .case-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .case-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .case-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .case-relevance {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .case-body {
+            padding: 1.5rem;
+        }
+
+        .case-citation {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            font-style: italic;
+            color: #666;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .error-message {
+            background-color: #fff3f3;
+            color: var(--accent-color);
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent-color);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #f0fff0;
+            color: var(--success-color);
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 4px solid var(--success-color);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .cases-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .case-card {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .case-body {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .case-citation {
+                margin-top: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-balance-scale"></i> Taseen's Caselaw Search
+        </div>
+        <div class="tagline">Find relevant case law for your legal issues</div>
+    </header>
+
+    <div class="container">
+        <div class="search-form">
+            <div class="error-message" id="error-message"></div>
+            <div class="success-message" id="success-message"></div>
+
+            <div class="form-group">
+                <label for="legal-issue">Describe your legal issue in detail:</label>
+                <textarea id="legal-issue" placeholder="E.g., My client is facing a trademark infringement claim for a logo that resembles another company's logo but in a different industry..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="jurisdiction">Legal jurisdiction:</label>
+                <input type="text" id="jurisdiction" placeholder="E.g., California, Federal 9th Circuit, New York, etc.">
+            </div>
+
+            <div class="form-group">
+                <label for="law-types">Relevant areas of law:</label>
+                <input type="text" id="law-types" placeholder="E.g., Intellectual Property, Contract Law, Civil Procedure, etc.">
+            </div>
+
+            <div class="btn-container">
+                <button class="btn" id="search-btn">Find Relevant Cases</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-circle-notch"></i>
+            <p>Searching for relevant cases...</p>
+        </div>
+
+        <div id="results">
+            <h2>Most Relevant Cases</h2>
+            <p>Here are the top 5 most relevant cases for your legal issue:</p>
+
+            <div class="cases-container" id="cases-container">
+                <!-- Case cards will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 Taseen's Caselaw Search | For Legal Research Purposes Only
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('search-btn');
+            const loadingIndicator = document.getElementById('loading');
+            const resultsContainer = document.getElementById('results');
+            const casesContainer = document.getElementById('cases-container');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+
+            searchBtn.addEventListener('click', async function() {
+                // Get form values
+                const legalIssue = document.getElementById('legal-issue').value.trim();
+                const jurisdiction = document.getElementById('jurisdiction').value.trim();
+                const lawTypes = document.getElementById('law-types').value.trim();
+
+                // Basic validation
+                if (!legalIssue || !jurisdiction || !lawTypes) {
+                    showError('Please fill in all fields to find relevant cases.');
+                    return;
+                }
+
+                // Reset any previous error messages
+                hideError();
+                hideSuccess();
+
+                // Show loading indicator
+                loadingIndicator.style.display = 'block';
+                resultsContainer.style.display = 'none';
+
+                try {
+                    // Prepare the prompt for GPT-4o
+                    const prompt = `You are a legal research assistant. I need the 5 most relevant cases for the following legal issue:
+                    Legal issue: ${legalIssue}
+                    Jurisdiction: ${jurisdiction}
+                    Areas of law: ${lawTypes}
+
+                    For each case, provide:
+                    1. The case name
+                    2. A 100-200 word summary of the case and its specific relevance to my issue
+                    3. The complete Bluebook citation
+
+                    Format your response as JSON with the following structure:
+                    {
+                        "cases": [
+                            {
+                                "name": "Case Name",
+                                "summary": "Case summary and relevance...",
+                                "citation": "Complete Bluebook citation"
+                            },
+                            ... (4 more cases)
+                        ]
+                    }
+
+                    Ensure all information is accurate, relevant to my specific issue, and follows proper legal citation format.`;
+
+                    // Show temporary alert for debugging
+                    showSuccess("Starting API request. Check console for details...");
+
+                    // For demonstration on platforms with API restrictions
+                    const useOpenAI = false; // Set to false if running on platforms like Prelit
+
+                    if (useOpenAI) {
+                        // Real OpenAI API call
+                        const openaiKey = 'YOUR_OPENAI_API_KEY';
+
+                        console.log('Sending request to OpenAI API...');
+                        try {
+                            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${openaiKey}`
+                                },
+                                body: JSON.stringify({
+                                    model: "gpt-4o",
+                                    messages: [
+                                        {
+                                            role: "user",
+                                            content: prompt
+                                        }
+                                    ],
+                                    temperature: 0.7,
+                                    max_tokens: 2000
+                                })
+                            });
+
+                            if (!response.ok) {
+                                const errorData = await response.json().catch(() => null);
+                                console.error('API Error:', errorData || response.statusText);
+                                throw new Error(`API error: ${response.status} ${response.statusText}`);
+                            }
+                        } catch (err) {
+                            console.error("Fetch error:", err);
+                            throw new Error("Network error when contacting OpenAI API. This may be due to CORS restrictions if running on platforms like Prelit.");
+                        }
+                    } else {
+                        // Demo mode - use mock data instead of real API call
+                        console.log('Running in demo mode with sample data');
+                        // Simulate API delay
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+
+                        // Mock response for demonstration
+                        const response = {
+                            ok: true,
+                            json: async () => ({
+                                choices: [{
+                                    message: {
+                                        content: JSON.stringify({
+                                            cases: [
+                                                {
+                                                    name: "Example v. Demo Corp.",
+                                                    summary: "This is an example case summary that would typically be generated by the OpenAI API. The case involved similar issues to yours and established a precedent for how courts in your jurisdiction handle these matters. This is relevant to your situation because it addresses the key legal questions at stake in your current matter.",
+                                                    citation: "123 F.3d 456 (9th Cir. 2022)"
+                                                },
+                                                {
+                                                    name: "Sample v. Test LLC",
+                                                    summary: "Another example case that would be relevant to your legal issue. This case refined the principles established in Example v. Demo Corp and clarified how they apply in situations similar to yours. The court specifically addressed questions about legal standards that are directly applicable to your current matter.",
+                                                    citation: "234 Cal. App. 4th 567 (2021)"
+                                                },
+                                                {
+                                                    name: "Precedent v. Legal Industries",
+                                                    summary: "This case established important guidelines for issues similar to yours in your jurisdiction. The court ruled on matters that have direct bearing on how your case might be evaluated. The principles outlined here would be critical for building your legal strategy.",
+                                                    citation: "345 U.S. 678 (2020)"
+                                                },
+                                                {
+                                                    name: "Illustration v. Pattern Co.",
+                                                    summary: "This case dealt with facts remarkably similar to your situation and provides insight into how courts in your jurisdiction might view your specific circumstances. The ruling here offers valuable guidance on strategy and potential outcomes for your current matter.",
+                                                    citation: "456 F. Supp. 3d 789 (S.D. Cal. 2023)"
+                                                },
+                                                {
+                                                    name: "Reference v. Standard Inc.",
+                                                    summary: "This recent case refined the application of principles from earlier precedents in circumstances that closely parallel yours. The court's analysis provides a framework that would be directly applicable to evaluating the strengths and weaknesses of your position in the current matter.",
+                                                    citation: "567 Cal. Rptr. 3d 890 (Ct. App. 2024)"
+                                                }
+                                            ]
+                                        })
+                                    }
+                                }]
+                            })
+                        };
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch data from OpenAI API');
+                    }
+
+                    const data = await response.json();
+                    const content = data.choices[0].message.content;
+
+                    // Parse JSON response
+                    let caseData;
+                    try {
+                        // Log the response for debugging
+                        console.log('API Response:', content);
+
+                        // Try to find JSON in the response if it's not pure JSON
+                        let jsonContent = content;
+                        if (content.includes('{') && content.includes('}')) {
+                            const jsonStart = content.indexOf('{');
+                            const jsonEnd = content.lastIndexOf('}') + 1;
+                            jsonContent = content.substring(jsonStart, jsonEnd);
+                        }
+
+                        caseData = JSON.parse(jsonContent);
+                    } catch (e) {
+                        console.error('JSON Parse Error:', e);
+                        console.error('Content that failed to parse:', content);
+                        throw new Error('Failed to parse API response as JSON. Check browser console for details.');
+                    }
+
+                    // Validate response structure
+                    if (!caseData.cases || !Array.isArray(caseData.cases) || caseData.cases.length === 0) {
+                        throw new Error('Invalid response format from API');
+                    }
+
+                    // Display the results
+                    displayCases(caseData.cases);
+                    showSuccess('Successfully found relevant cases for your legal issue.');
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError('An error occurred while searching for cases. Please try again later.');
+                } finally {
+                    // Hide loading indicator
+                    loadingIndicator.style.display = 'none';
+                }
+            });
+
+            function displayCases(cases) {
+                // Clear previous results
+                casesContainer.innerHTML = '';
+
+                // Handle cases even if less than 5 are returned
+                const casesToDisplay = cases.slice(0, 5);
+
+                // Add each case card
+                casesToDisplay.forEach((caseItem, index) => {
+                    // Check if all required fields exist
+                    const caseName = caseItem.name || 'Unnamed Case';
+                    const caseSummary = caseItem.summary || 'No summary provided';
+                    const caseCitation = caseItem.citation || 'No citation provided';
+
+                    const caseCard = document.createElement('div');
+                    caseCard.className = 'case-card';
+                    caseCard.innerHTML = `
+                        <div class="case-header">
+                            <span>${caseName}</span>
+                            <span class="case-relevance">Case ${index + 1}</span>
+                        </div>
+                        <div class="case-body">
+                            <p>${caseSummary}</p>
+                            <div class="case-citation">${caseCitation}</div>
+                        </div>
+                    `;
+                    casesContainer.appendChild(caseCard);
+                });
+
+                // Show results section
+                resultsContainer.style.display = 'block';
+
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            function hideError() {
+                errorMessage.style.display = 'none';
+            }
+
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            function hideSuccess() {
+                successMessage.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
